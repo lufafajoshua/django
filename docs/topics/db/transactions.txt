@@ -187,7 +187,14 @@ Django provides a single API to control database transactions.
         If you catch exceptions raised by raw SQL queries, Django's behavior
         is unspecified and database-dependent.
 
-    .. admonition:: You may need to manually revert model state when rolling back a transaction.
+    .. admonition:: You may need to manually revert all form of state when rolling back a transaction.
+
+        All form of state should be reverted including global state mutations
+        such as caching, also rely on ``transaction.on_commit`` to deal with
+        global state alterations. For example the use of database transactions
+        may have unintended consequences if your code uses caching, or
+        proactively updates data in the cache, you may need to use
+        ``transaction.on_commit`` to defer cache alterations.
 
         The values of a model's fields won't be reverted when a transaction
         rollback happens. This could lead to an inconsistent model state unless
