@@ -2,7 +2,8 @@
 Database transactions
 =====================
 
-.. module:: django.db.transaction
+.. module:: django.db. mode. Each query is
+immediately committed to the database, unless a transaction
 
 Django gives you a few ways to control how database transactions are managed.
 
@@ -12,8 +13,7 @@ Managing database transactions
 Django's default transaction behavior
 -------------------------------------
 
-Django's default behavior is to run in autocommit mode. Each query is
-immediately committed to the database, unless a transaction is active.
+Django's default behavior is to run in autocommittransaction is active.
 :ref:`See below for details <autocommit-details>`.
 
 Django uses transactions or savepoints automatically to guarantee the
@@ -187,14 +187,7 @@ Django provides a single API to control database transactions.
         If you catch exceptions raised by raw SQL queries, Django's behavior
         is unspecified and database-dependent.
 
-    .. admonition:: You may need to manually revert all form of state when rolling back a transaction.
-
-        All form of state should be reverted including global state mutations
-        such as caching, also rely on ``transaction.on_commit`` to deal with
-        global state alterations. For example the use of database transactions
-        may have unintended consequences if your code uses caching, or
-        proactively updates data in the cache, you may need to use
-        ``transaction.on_commit`` to defer cache alterations.
+    .. admonition:: You may need to manually revert app state when rolling back a transaction.
 
         The values of a model's fields won't be reverted when a transaction
         rollback happens. This could lead to an inconsistent model state unless
@@ -216,6 +209,14 @@ Django provides a single API to control database transactions.
 
             if obj.active:
                 ...
+
+        This also applies to any other mechanism that may hold app state, such
+        as caching or global variables. For example, if the code proactively
+        updates data in the cache after saving an object, it's recommended to
+        use :ref:`transcation.on_commit <performing-actions-after-commit>`
+        instead, to defer cache alterations until the transaction is actually
+        committed.
+
 
     In order to guarantee atomicity, ``atomic`` disables some APIs. Attempting
     to commit, roll back, or change the autocommit state of the database
@@ -291,6 +292,8 @@ This requires you to commit explicitly every transaction, even those started
 by Django or by third-party libraries. Thus, this is best used in situations
 where you want to run your own transaction-controlling middleware or do
 something really strange.
+
+.. _performing-actions-after-commit:
 
 Performing actions after commit
 ===============================
